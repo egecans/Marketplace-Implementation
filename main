@@ -1,0 +1,119 @@
+package executable;
+
+import elements.Order;
+import elements.SellingOrder;
+import elements.Trader;
+import elements.BuyingOrder;
+import elements.Market;
+import elements.Transaction;
+import elements.Wallet;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+import java.util.*;
+
+
+public class Main{
+	
+	public static void main(String[] args) throws FileNotFoundException {
+		
+		
+		
+		Scanner in = new Scanner(new File(args[0]));
+		PrintStream out = new PrintStream(new File(args[1]));
+		
+		int seed = in.nextInt();
+		Random myRandom = new Random(seed);
+		final Market market = new Market(in.nextInt());
+		int theNumberofUsers = in.nextInt();
+		int theNumberofQueries = in.nextInt();
+		
+		
+		for (int i = 0; i < theNumberofUsers+1; i++ ) {
+			String line = in.nextLine().trim();
+			if (i >= 1) {
+			String split[] = line.split(" ", 2);
+			market.addTraderstoMarket(new Trader ( Double.parseDouble(split[0]), Double.parseDouble(split[1]) ) );
+			}
+		}
+		
+		
+		for (int i = 0; i< theNumberofQueries; i++ ) {
+			String line = in.nextLine().trim();
+			if (line.startsWith("10")) {
+				String split[] = line.split(" ", 4);
+				market.giveBuyOrder(new BuyingOrder( Integer.parseInt(split[1]) , Double.parseDouble(split[3]) , Double.parseDouble(split[2]) ) ) ; 		
+		}
+			if (line.startsWith("11")) {
+				String split[] = line.split(" ", 3);
+				market.currentBuyOrder(new BuyingOrder ( Integer.parseInt(split[1]), Double.parseDouble(split[2]) , market.buyingCurrentPrice()  ) );
+			}
+			if(line.startsWith("20")) {
+				String split[] = line.split(" ", 4);
+				market.giveSellOrder(new SellingOrder( Integer.parseInt(split[1]) , Double.parseDouble(split[3]) , Double.parseDouble(split[2]) ) ) ;
+			}
+			if(line.startsWith("21")) {
+				String split[] = line.split(" ", 3);
+				market.currentSellOrder(new SellingOrder ( Integer.parseInt(split[1]), Double.parseDouble(split[2]) , market.sellingCurrentPrice()  ) );
+			}
+			if (line.startsWith("3")) {
+				String split[] = line.split(" ", 3);
+				market.getTraders().get(Integer.parseInt(split[1])).getWallet().addDollars(Double.parseDouble(split[2]));
+			}
+			if (line.startsWith("4")) {
+				String split[] = line.split(" ", 3);
+				market.getTraders().get(Integer.parseInt(split[1])).getWallet().withdraw(Double.parseDouble(split[2]));
+			}
+	
+			if (line.startsWith("777")) {
+				for (int j = 0 ; j < market.getTraders().size(); j++) {
+					market.getTraders().get(j).getWallet().rewardCoins(myRandom.nextDouble()*10);
+				}
+			}
+			if (line.startsWith("666")) {
+				String split[] = line.split(" ", 2);
+				market.makeOpenMarketOperation(Double.parseDouble(split[1]));
+			}
+			if (line.startsWith("500")) {
+				out.println(market.currentMarketSize());
+			}
+			if (line.startsWith("501")) {
+				out.println("Number of successful transactions: " + Transaction.getNumberOfTransactions());
+			}
+			if (line.startsWith("502") ) {
+				int totalInvalidQueries = Order.getInvalidQueries() + Wallet.getInvalidQueries() ;
+				out.println("Number of invalid queries: " + totalInvalidQueries);
+			}
+			if (line.startsWith("505")) {
+				out.println(market.marketCurrentPrices());
+			}
+			if (line.startsWith("555")) {
+				for (int j = 0; j < market.getTraders().size(); j++ ) {
+					out.println(market.getTraders().get(j).printWallet());
+				}
+			}
+			if (line.startsWith("5")) {
+				if ( ! ( line.startsWith("500") ||  line.startsWith("501") || line.startsWith("502") ||  line.startsWith("505") || line.startsWith("555") )  ) {
+					String split[] = line.split(" ", 2);
+					System.out.println(split[1]);
+					out.println(market.getTraders().get(Integer.parseInt(split[1])).printWallet());
+				}
+			}
+			
+			
+		}
+
+		
+		
+		in.close();
+		out.close();
+		
+		
+		
+	}
+	
+	
+	
+}
+
